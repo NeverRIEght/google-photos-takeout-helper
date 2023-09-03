@@ -10,6 +10,17 @@ What it does?
 2. ~~Going throw all of this mess, taking info from json and placing it inside your multimedia files~~ (Only mp4 files are supported for now)
 3. ~~Removes all json files in this main folder~~
 
+Also, here is the list of metadata supported:
+
+| File type | Title | Description | File modification date | File creation date  | Geographic coords |
+|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|
+| jpeg(jpg)  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| png  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| webp  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| mp4  | &#10003;  | &#10003;  | &#10003;  | &#10007;  | &#10003;, via recode  |
+| mov  | tbd  | tbd  | tbd  | tbd  | tbd  |
+
 To-do list:
 - [x] Deserialization solution for json
 - [ ] Library renamer (read below)
@@ -19,6 +30,8 @@ To-do list:
 - [ ] .png support
 - [ ] .webp support
 - [ ] Create a manual
+
+
 
 System requirements
 -------

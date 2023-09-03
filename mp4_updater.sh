@@ -114,7 +114,6 @@ ffmpegErrors=()
 mkdir gphoto-output-mp4
 rm -r gphoto-output-mp4/*
 
-#fileCount=$(ls -1 | wc -l)
 jsonAllCount=$(find . -type f -name "*.json" | wc -l)
 trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
 jsonAllCount="$trimmed_string"
@@ -154,22 +153,22 @@ for json_file in *.json; do
         altitude=$(jq -r '.geoData.altitude' "$json_file")
 
         if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-            output=$(ffmpeg -loglevel warning -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+            output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
             if [[ "$output" != "" ]]; then
-                ffmpegErrors+="-------------"
-                ffmpegErrors+="Error occured:"
-                ffmpegErrors+="fileName: ${fileName}${fileExtesion}"
-                ffmpegErrors+="fileJson: $fileJson"
+                ffmpegErrors+=("-------------")
+                ffmpegErrors+=("Error occurred:")
+                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                ffmpegErrors+=("fileJson: $fileJson")
             fi
             ffmpegErrors+=("$output")
             
         else
-            output=$(ffmpeg -loglevel warning -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+            output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
             if [[ "$output" != "" ]]; then
-                ffmpegErrors+="-------------"
-                ffmpegErrors+="Error occured:"
-                ffmpegErrors+="fileName: ${fileName}${fileExtesion}"
-                ffmpegErrors+="fileJson: $fileJson"
+                ffmpegErrors+=("-------------")
+                ffmpegErrors+=("Error occurred:")
+                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                ffmpegErrors+=("fileJson: $fileJson")
             fi
             ffmpegErrors+=("$output")
         fi
@@ -212,61 +211,7 @@ for json_file in *.json; do
         tiffFound=$(($tiffFound+1))
     fi
 
-
-
-
-
-    # filename="${json_file%.mp4.json}"
-    # mp4_file="${filename}.mp4"
-    
-    # #json import
-
-    # title=$(jq -r '.title' "$json_file")
-    # echo "title = $title"
-
-    # if [[ "$title" != "" ]]; then
-    #     $filename="${title%.mp4}"
-    # fi
-
-    # description=$(jq -r '.description' "$json_file")
-    # echo "description = $description"
-
-    # ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
-    # ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
-    # echo "ctTimestamp = $ctTimestamp"
-
-    # ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
-    # ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
-    # echo "ptTimestamp = $ptTimestamp"
-
-    # latitude=$(jq -r '.geoData.latitude' "$json_file")
-    # echo "latitude = $latitude"
-
-    # longitude=$(jq -r '.geoData.longitude' "$json_file")
-    # echo "longitude = $longitude"
-
-    # altitude=$(jq -r '.geoData.altitude' "$json_file")
-    # echo "altitude = $altitude"
-
-    # filesCounter=$(($filesCounter+1))
-
-    # if [ -e "$mp4_file" ]; then
-
-    #     if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-    #         ffmpeg -y -i "${filename}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${filename}".mp4
-    #     else
-    #         ffmpeg -y -i "${filename}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${filename}".mp4
-    #     fi
-        
-	#     touch -d "$ctTimestamp" "gphoto-output-mp4/${filename}".mp4
-
-    #     successCounter=$(($successCounter+1))
-
-    # else
-    #     errorCounter=$(($errorCounter+1))
-    # fi
-
-
+    clear
     echo "Processed $jsonScanned / $jsonAllCount json files"
 
 done
@@ -275,25 +220,23 @@ done
 #Write mov metadata
 #ffmpeg -i "$input_file" -map_metadata 0 -c:v copy -c:a copy -metadata title="$new_title" -metadata description="$new_description" -metadata creation_time="$new_creation_date" -metadata modification_time="$new_modification_date" -metadata location="$new_geo_location" -y output.mov
 
+echo "Finishing the report..."
+ffmpegErrors=("${ffmpegErrors[@]//[$'\r\n']/}")
+ffmpegErrors=("${ffmpegErrors[@]/$'\n'/}")
 
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
+
+clear
 echo "Script finished. Statistics:"
 echo "Scanned $jsonScanned json files"
 echo "Found $mp4Found mp4 files"
 echo "Changed $mp4Suc mp4 files"
-echo "Errors:"
+echo "Number of occured errors: $(grep -o 'Error occurred:' <<< "${ffmpegErrors[@]}" | wc -l)"
 for error in "${ffmpegErrors[@]}"; do
-    echo "$error"
+    if [[ ! -z "$error" ]]; then
+        echo "$error"
+    fi
 done
+
 # echo "Updated metadata in ${successCounter} mp4 files"
 # echo "Recoded ${recodedCounter} mp4 files to add geo info"
 # echo "Missing ${errorCounter} mp4 files"

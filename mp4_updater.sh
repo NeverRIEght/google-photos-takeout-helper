@@ -110,8 +110,14 @@ ffmpegErrors=()
 # done
 
 
+
 mkdir gphoto-output-mp4
 rm -r gphoto-output-mp4/*
+
+#fileCount=$(ls -1 | wc -l)
+jsonAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+jsonAllCount="$trimmed_string"
 
 for json_file in *.json; do
     
@@ -125,45 +131,54 @@ for json_file in *.json; do
     title=$(jq -r '.title' "$json_file")
 
     if [[ "$title" == *".mp4"* ]]; then
-
+        
         fileName="${title%.mp4}"
         fileExtesion=".mp4"
         fileJson="$json_file"
+        fileMp4="${json_file%.mp4.json}"
         mp4Found=$(($mp4Found+1))
         
 
         description=$(jq -r '.description' "$json_file")
-        echo "description = $description"
 
         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
         ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
-        echo "ctTimestamp = $ctTimestamp"
 
         ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
         ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
-        echo "ptTimestamp = $ptTimestamp"
 
         latitude=$(jq -r '.geoData.latitude' "$json_file")
-        echo "latitude = $latitude"
 
         longitude=$(jq -r '.geoData.longitude' "$json_file")
-        echo "longitude = $longitude"
 
         altitude=$(jq -r '.geoData.altitude' "$json_file")
-        echo "altitude = $altitude"
 
         if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-            output=$(ffmpeg -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4)
-            # if [[ $output == *"Error"* ]]; then
-            #     ffmpegErrors+=("$output")
-            # fi
-            #ffmpegErrors+=("$output")
+            output=$(ffmpeg -loglevel warning -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+            if [[ "$output" != "" ]]; then
+                ffmpegErrors+="-------------"
+                ffmpegErrors+="Error occured:"
+                ffmpegErrors+="fileName: ${fileName}${fileExtesion}"
+                ffmpegErrors+="fileJson: $fileJson"
+            fi
+            ffmpegErrors+=("$output")
             
         else
-            ffmpeg -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4
+            output=$(ffmpeg -loglevel warning -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+            if [[ "$output" != "" ]]; then
+                ffmpegErrors+="-------------"
+                ffmpegErrors+="Error occured:"
+                ffmpegErrors+="fileName: ${fileName}${fileExtesion}"
+                ffmpegErrors+="fileJson: $fileJson"
+            fi
+            ffmpegErrors+=("$output")
         fi
 
         touch -d "$ctTimestamp" "gphoto-output-mp4/${fileName}".mp4
+
+
+
+        mp4Suc=$(($mp4Suc+1))
 
     elif [[ "$title" == *".mov"* ]]; then
         fileName="${title%.mov}"
@@ -251,6 +266,9 @@ for json_file in *.json; do
     #     errorCounter=$(($errorCounter+1))
     # fi
 
+
+    echo "Processed $jsonScanned / $jsonAllCount json files"
+
 done
 
 
@@ -269,7 +287,13 @@ echo ""
 echo ""
 echo ""
 echo "Script finished. Statistics:"
-echo "Scanned $jsonScanned json files."
+echo "Scanned $jsonScanned json files"
+echo "Found $mp4Found mp4 files"
+echo "Changed $mp4Suc mp4 files"
+echo "Errors:"
+for error in "${ffmpegErrors[@]}"; do
+    echo "$error"
+done
 # echo "Updated metadata in ${successCounter} mp4 files"
 # echo "Recoded ${recodedCounter} mp4 files to add geo info"
 # echo "Missing ${errorCounter} mp4 files"

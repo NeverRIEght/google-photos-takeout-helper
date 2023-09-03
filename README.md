@@ -1,5 +1,5 @@
 # google-photos-takeout-helper
-Takeout photos and videos from Google Photos can be problematic, mostly because of lots of metadata, which needs to be written to a photo/video itself. But GP does not care and if you try to export your awesome multimedia library, you will get a two different types of files: file of a multimedia file itself (jpeg, png, tiff, webp, mp4, mov, etc.) and a json file with metadata for the file mentioned previously. Now, just imagine: you have about 80000 photos and videos and also 80000 of json files! What a mess! What should you do?
+Takeout photos and videos from Google Photos can be problematic, mostly because of lots of metadata, which needs to be written to a photo/video itself. But GP does not care and if you try to export your awesome multimedia library, you will get a two different types of files: multimedia file itself (jpeg, png, tiff, webp, mp4, mov, etc.) and a json file with metadata for the file mentioned previously. Now, just imagine: you have about 80000 photos and videos and also 80000 of json files! What a mess! What should you do?
 
 I failed trying to find a perfect solution for this situation, that`s why this project appears. What is "takeout helper" and what it actually does?
 

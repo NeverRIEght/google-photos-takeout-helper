@@ -176,6 +176,7 @@ for json_file in *.json; do
         fileExtesion=".jpg"
         fileJson="$json_file"
         jpgFound=$(($jpgFound+1))
+        
     elif [[ "$title" == *".jpeg"* ]]; then
         fileName="${title%.jpeg}"
         fileExtesion=".jpeg"
@@ -202,6 +203,28 @@ for json_file in *.json; do
     echo "Processed $jsonScanned / $jsonAllCount json files"
 
 done
+
+exiftool_command="exiftool -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
+                        '-Title<\${title;\$_ = \$val if \$val}' \
+                        '-Description<\${description;\$_ = \$val if \$val}' \
+                        '-CreateDate<\${creationTime.timestamp;\$_ = \$val if \$val}' \
+                        '-ModifyDate<\${photoTakenTime.timestamp;\$_ = \$val if \$val}' \
+                        '-GPSLatitude<\${geoData.latitude;\$_ = \$val if \$val}' \
+                        '-GPSLongitude<\${geoData.longitude;\$_ = \$val if \$val}' \
+                        '-GPSAltitude<\${geoData.altitude;\$_ = \$val if \$val}' \
+                        '*.jpg'"
+        exiftool_output=$(eval "$exiftool_command")
+        ffmpegErrors+=("$exiftool_output")
+
+# exiftool -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
+#     '-Title<${Title;$_ = $val if $val}' \
+#     '-Description<${Description;$_ = $val if $val}' \
+#     '-CreateDate<${PhotoTakenTime.timestamp;$_ = $val if $val}' \
+#     '-ModifyDate<${PhotoTakenTime.timestamp;$_ = $val if $val}' \
+#     '-GPSLatitude<${GeoData.latitude;$_ = $val if $val}' \
+#     '-GPSLongitude<${GeoData.longitude;$_ = $val if $val}' \
+#     '-GPSAltitude<${GeoData.altitude;$_ = $val if $val}' \
+#     '*.jpg'
 
 echo "Finishing the report..."
 ffmpegErrors=("${ffmpegErrors[@]//[$'\r\n']/}")

@@ -21,10 +21,15 @@ Also, here is the list of metadata supported:
 | mp4  | &#10003;  | &#10003;  | &#10003;  | &#10007;  | &#10003;, via recode  |
 | mov  | tbd  | tbd  | tbd  | tbd  | tbd  |
 
+Some commentaries to this table:
+- Linux is unfriendly when you need to change the creation date of a file. In some cases this is possible and in some it is not. Some of the formats listed in the table do not have such a metadata field at all, and even if one is added, most applications will not recognize this date. That's why this type of metadata has such poor support in my script.
+- Geo coords is supported in mp4, but due to the peculiarities of ffmpeg, it is not possible to save the necessary metadata without video recoding. I assure you that the quality of the video when transcoding in this way remains approximately the same, if you look purely at the eye.
+
 To-do list:
 - [x] Deserialization solution for json
-- [ ] Library renamer (read below)
 - [x] .mp4 support
+- [ ] Human-readable ffmpeg errors
+- [ ] Library renamer (read below)
 - [ ] .mov support
 - [ ] .jpg support
 - [ ] .png support

@@ -19,7 +19,7 @@ Also, here is the list of metadata supported:
 | webp  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | mp4  | &#10003;  | &#10003;  | &#10003;  | &#10007;  | &#10003;, via recode  |
-| mov  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| mov  | &#10003;  | &#10003;  | &#10003;  | &#10003;  | &#10003;  |
 
 Some commentaries to this table:
 - Linux is unfriendly when you need to change the creation date of a file. In some cases this is possible and in some it is not. Some of the formats listed in the table do not have such a metadata field at all, and even if one is added, most applications will not recognize this date. That's why this type of metadata has such poor support in my script.
@@ -29,11 +29,13 @@ To-do list:
 - [x] Deserialization solution for json
 - [x] .mp4 support
 - [x] Human-readable ffmpeg errors
+- [x] .mov support
 - [ ] Library renamer (read below)
-- [ ] .mov support
+- [ ] Recursive error solver
 - [ ] .jpg support
 - [ ] .png support
 - [ ] .webp support
+- [ ] .tiff support
 - [ ] Create a manual
 
 

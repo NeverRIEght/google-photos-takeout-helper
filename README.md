@@ -28,7 +28,7 @@ Some commentaries to this table:
 To-do list:
 - [x] Deserialization solution for json
 - [x] .mp4 support
-- [ ] Human-readable ffmpeg errors
+- [x] Human-readable ffmpeg errors
 - [ ] Library renamer (read below)
 - [ ] .mov support
 - [ ] .jpg support

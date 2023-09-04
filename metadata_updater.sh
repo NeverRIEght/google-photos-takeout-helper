@@ -17,23 +17,53 @@
 
 # Counters
 
+#Count of all types of files inside the current folder
+
+jsonAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+jsonAllCount="$trimmed_string"
+
+mp4AllCount=$(find . -type f -name "*.mp4" | wc -l)
+trimmed_string=$(echo "$mp4AllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+mp4AllCount="$trimmed_string"
+
+movAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$movAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+movAllCount="$trimmed_string"
+
+jpgAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$jpgAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+jpgAllCount="$trimmed_string"
+
+pngAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$pngAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+pngAllCount="$trimmed_string"
+
+webpAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$webpAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+webpAllCount="$trimmed_string"
+
+tiffAllCount=$(find . -type f -name "*.json" | wc -l)
+trimmed_string=$(echo "$tiffAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
+tiffAllCount="$trimmed_string"
+
 #File types
 
 jsonScanned=0
 
-mp4Found=0
-movFound=0
-jpgFound=0
-pngFound=0
-webpFound=0
-tiffFound=0
+mp4Scanned=0
+movScanned=0
+jpgScanned=0
+pngScanned=0
+webpScanned=0
+tiffScanned=0
 
-mp4Suc=0
-movSuc=0
-jpgSuc=0
-pngSuc=0
-webpSuc=0
-tiffSuc=0
+mp4Proc=0
+movProc=0
+jpgProc=0
+pngProc=0
+webpProc=0
+tiffProc=0
 
 mp4Err=0
 movErr=0
@@ -59,10 +89,12 @@ mkdir gphoto-output-mov
 rm -r gphoto-output-mov/*
 mkdir gphoto-output-jpg
 rm -r gphoto-output-jpg/*
-
-jsonAllCount=$(find . -type f -name "*.json" | wc -l)
-trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-jsonAllCount="$trimmed_string"
+mkdir gphoto-output-png
+rm -r gphoto-output-png/*
+mkdir gphoto-output-webp
+rm -r gphoto-output-webp/*
+mkdir gphoto-output-tiff
+rm -r gphoto-output-tiff/*
 
 for json_file in *.json; do
     
@@ -81,7 +113,7 @@ for json_file in *.json; do
         fileExtesion=".mp4"
         fileJson="$json_file"
         fileMp4="${json_file%.mp4.json}"
-        mp4Found=$(($mp4Found+1))
+        mp4Scanned=$(($mp4Scanned+1))
         
 
         description=$(jq -r '.description' "$json_file")
@@ -106,8 +138,8 @@ for json_file in *.json; do
                     ffmpegErrors+=("fileJson: $fileJson")
                 fi
                 ffmpegErrors+=("$output")
-                touch -d "$ctTimestamp" "gphoto-output-mp4/${fileName}".mp4
-                mp4Suc=$(($mp4Suc+1))
+                touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
+                mp4Proc=$(($mp4Proc+1))
             else
                 output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
                 if [[ "$output" != "" ]]; then
@@ -117,8 +149,8 @@ for json_file in *.json; do
                     ffmpegErrors+=("fileJson: $fileJson")
                 fi
                 ffmpegErrors+=("$output")
-                touch -d "$ctTimestamp" "gphoto-output-mp4/${fileName}".mp4
-                mp4Suc=$(($mp4Suc+1))
+                touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
+                mp4Proc=$(($mp4Proc+1))
             fi
         else
             ffmpegErrors+=("-------------")
@@ -129,10 +161,11 @@ for json_file in *.json; do
         fi
 
     elif [[ "$title" == *".mov"* ]]; then
+
         fileName="${title%.mov}"
         fileExtesion=".mov"
         fileJson="$json_file"
-        movFound=$(($movFound+1))
+        movScanned=$(($movScanned+1))
 
         description=$(jq -r '.description' "$json_file")
 
@@ -158,8 +191,8 @@ for json_file in *.json; do
                     ffmpegErrors+=("fileJson: $fileJson")
                 fi
                 ffmpegErrors+=("$output")
-                touch -d "$ctTimestamp" "gphoto-output-mov/${fileName}".mov
-                movSuc=$(($movSuc+1))
+                touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
+                movProc=$(($movProc+1))
             else
                 output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
                 exiftool -tagsfromfile "$json_file" "-gps:all<geoData" "${fileName}.mov"
@@ -170,8 +203,8 @@ for json_file in *.json; do
                     ffmpegErrors+=("fileJson: $fileJson")
                 fi
                 ffmpegErrors+=("$output")
-                touch -d "$ctTimestamp" "gphoto-output-mov/${fileName}".mov
-                movSuc=$(($movSuc+1))
+                touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
+                movProc=$(($movProc+1))
             fi
         else
             ffmpegErrors+=("-------------")
@@ -185,10 +218,11 @@ for json_file in *.json; do
         
 
     elif [[ "$title" == *".jpg"* ]]; then
+    
         fileName="${title%.jpg}"
         fileExtesion=".jpg"
         fileJson="$json_file"
-        jpgFound=$(($jpgFound+1))
+        jpgScanned=$(($jpgScanned+1))
 
         description=$(jq -r '.description' "$json_file")
 
@@ -228,23 +262,23 @@ for json_file in *.json; do
             mv "${fileName}.jpg" "gphoto-output-jpg/"
         fi
 
-        jpgSuc=$(($jpgSuc+1))
+        jpgProc=$(($jpgProc+1))
         
     elif [[ "$title" == *".png"* ]]; then
         fileName="${title%.png}"
         fileExtesion=".png"
         fileJson="$json_file"
-        pngFound=$(($pngFound+1))
+        pngScanned=$(($pngScanned+1))
     elif [[ "$title" == *".webp"* ]]; then
         fileName="${title%.webp}"
         fileExtesion=".webp"
         fileJson="$json_file"
-        webpFound=$(($webpFound+1))
+        webpScanned=$(($webpScanned+1))
     elif [[ "$title" == *".tiff"* ]]; then
         fileName="${title%.tiff}"
         fileExtesion=".tiff"
         fileJson="$json_file"
-        tiffFound=$(($tiffFound+1))
+        tiffScanned=$(($tiffScanned+1))
     fi
 
     clear
@@ -273,12 +307,12 @@ errNumber="$trimmed_string"
 clear
 echo "All done. Statistics:"
 echo "Scanned $jsonScanned json files"
-echo "Found $mp4Found mp4 files"
-echo "Processed $mp4Suc mp4 files"
-echo "Found $movFound mov files"
-echo "Processed $movSuc mov files"
-echo "Found $jpgFound jpg files"
-echo "Processed $jpgSuc jpg files"
+echo "Found $mp4Scanned mp4 files"
+echo "Processed $mp4Proc mp4 files"
+echo "Found $movScanned mov files"
+echo "Processed $movProc mov files"
+echo "Found $jpgScanned jpg files"
+echo "Processed $jpgProc jpg files"
 echo "Number of occured errors: $errNumber"
 for error in "${ffmpegErrors[@]}"; do
     if [[ ! -z "$error" ]]; then

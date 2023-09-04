@@ -18,11 +18,17 @@ Also, here is the list of metadata supported:
 | png  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | webp  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
-| mp4  | &#10003;  | &#10003;  | &#10003;  | &#10007;  | &#10003;, via recode  |
-| mov  | &#10003;  | &#10003;  | &#10003;  | &#10003;  | &#10003;  |
+| mp4  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;, via recode  |
+| mov  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
+
+
+<b>The table does not illustrate the structure of the metadata of the file type, but whether the final file will contain the data you need.</b>
+
+<b>Modification date is no longer supported due to innacurate data, provided by Google Photos</b>
+
 
 Some commentaries to this table:
-- Linux is unfriendly when you need to change the creation date of a file. In some cases this is possible and in some it is not. Some of the formats listed in the table do not have such a metadata field at all, and even if one is added, most applications will not recognize this date. That's why this type of metadata has such poor support in my script.
+- Linux is unfriendly when you need to change the creation date of a file. In some cases this is possible and in some it is not. Some of the formats listed in the table do not have such a metadata field at all, and even if one is added, most applications will not recognize this date. Despite this, the script will try to record the date the file was modified and the date the file was created, if possible. In this way, you will most likely get a file whose metadata says that the file was created and edited at the same time - the time at which this video / photo was originally taken. So, you will get an accurate date in most cases.
 - Geo coords is supported in mp4, but due to the peculiarities of ffmpeg, it is not possible to save the necessary metadata without video recoding. I assure you that the quality of the video when transcoding in this way remains approximately the same, if you look purely at the eye.
 
 To-do list:

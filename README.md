@@ -14,7 +14,7 @@ Also, here is the list of metadata supported:
 
 | File type | Title | Description | File modification date | File creation date  | Geographic coords |
 |:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|
-| jpeg(jpg)  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| jpeg(jpg)  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
 | png  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | webp  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
@@ -30,9 +30,9 @@ To-do list:
 - [x] .mp4 support
 - [x] Human-readable ffmpeg errors
 - [x] .mov support
+- [x] .jpg support
 - [ ] Library renamer (read below)
 - [ ] Recursive error solver
-- [ ] .jpg support
 - [ ] .png support
 - [ ] .webp support
 - [ ] .tiff support

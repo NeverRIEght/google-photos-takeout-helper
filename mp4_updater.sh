@@ -57,6 +57,8 @@ mkdir gphoto-output-mp4
 rm -r gphoto-output-mp4/*
 mkdir gphoto-output-mov
 rm -r gphoto-output-mov/*
+mkdir gphoto-output-jpg
+rm -r gphoto-output-jpg/*
 
 jsonAllCount=$(find . -type f -name "*.json" | wc -l)
 trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
@@ -176,12 +178,47 @@ for json_file in *.json; do
         fileExtesion=".jpg"
         fileJson="$json_file"
         jpgFound=$(($jpgFound+1))
+
+        description=$(jq -r '.description' "$json_file")
+
+        ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
+        ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
+
+        ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
+        ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
+
+        latitude=$(jq -r '.geoData.latitude' "$json_file")
+        longitude=$(jq -r '.geoData.longitude' "$json_file")
+        altitude=$(jq -r '.geoData.altitude' "$json_file")
+
+        exiftool_command="exiftool -v3 -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
+                    '-Title=$title' \
+                    '-Description=$description' \
+                    '-CreateDate=$ptTimestamp' \
+                    '-ModifyDate=$ptTimestamp' \
+                    '-GPSLatitude=$latitude' \
+                    '-GPSLongitude=$longitude' \
+                    '-GPSAltitude=$altitude' \
+                    '${fileName}.jpg' 2>&1 >/dev/null"
         
-    elif [[ "$title" == *".jpeg"* ]]; then
-        fileName="${title%.jpeg}"
-        fileExtesion=".jpeg"
-        fileJson="$json_file"
-        jpgFound=$(($jpgFound+1))
+        exiftool_output=$(eval "$exiftool_command")
+
+        while IFS= read -r line; do
+            if [[ "$line" == *"Error"* ]]; then
+                ffmpegErrors+=("-------------")
+                ffmpegErrors+=("Error occurred:")
+                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                ffmpegErrors+=("fileJson: $fileJson")
+                ffmpegErrors+=("$line")
+            fi
+        done <<< "$exiftool_output"
+
+        if [ -f "${fileName}.jpg" ]; then
+            mv "${fileName}.jpg" "gphoto-output-jpg/"
+        fi
+
+        jpgSuc=$(($jpgSuc+1))
+        
     elif [[ "$title" == *".png"* ]]; then
         fileName="${title%.png}"
         fileExtesion=".png"
@@ -203,18 +240,6 @@ for json_file in *.json; do
     echo "Processed $jsonScanned / $jsonAllCount json files"
 
 done
-
-exiftool_command="exiftool -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
-                        '-Title<\${title;\$_ = \$val if \$val}' \
-                        '-Description<\${description;\$_ = \$val if \$val}' \
-                        '-CreateDate<\${creationTime.timestamp;\$_ = \$val if \$val}' \
-                        '-ModifyDate<\${photoTakenTime.timestamp;\$_ = \$val if \$val}' \
-                        '-GPSLatitude<\${geoData.latitude;\$_ = \$val if \$val}' \
-                        '-GPSLongitude<\${geoData.longitude;\$_ = \$val if \$val}' \
-                        '-GPSAltitude<\${geoData.altitude;\$_ = \$val if \$val}' \
-                        '*.jpg'"
-        exiftool_output=$(eval "$exiftool_command")
-        ffmpegErrors+=("$exiftool_output")
 
 # exiftool -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
 #     '-Title<${Title;$_ = $val if $val}' \
@@ -238,9 +263,11 @@ clear
 echo "All done. Statistics:"
 echo "Scanned $jsonScanned json files"
 echo "Found $mp4Found mp4 files"
-echo "Changed $mp4Suc mp4 files"
+echo "Processed $mp4Suc mp4 files"
 echo "Found $movFound mov files"
-echo "Changed $movSuc mov files"
+echo "Processed $movSuc mov files"
+echo "Found $jpgFound jpg files"
+echo "Processed $jpgSuc jpg files"
 echo "Number of occured errors: $errNumber"
 for error in "${ffmpegErrors[@]}"; do
     if [[ ! -z "$error" ]]; then

@@ -93,37 +93,40 @@ for json_file in *.json; do
         ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
 
         latitude=$(jq -r '.geoData.latitude' "$json_file")
-
         longitude=$(jq -r '.geoData.longitude' "$json_file")
-
         altitude=$(jq -r '.geoData.altitude' "$json_file")
 
-        if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-            output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
-            if [[ "$output" != "" ]]; then
-                ffmpegErrors+=("-------------")
-                ffmpegErrors+=("Error occurred:")
-                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                ffmpegErrors+=("fileJson: $fileJson")
+        if [ -f "${fileName}.mp4" ]; then
+            if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
+                output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+                if [[ "$output" != "" ]]; then
+                    ffmpegErrors+=("-------------")
+                    ffmpegErrors+=("Error occurred:")
+                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                    ffmpegErrors+=("fileJson: $fileJson")
+                fi
+                ffmpegErrors+=("$output")
+                touch -d "$ctTimestamp" "gphoto-output-mp4/${fileName}".mp4
+                mp4Suc=$(($mp4Suc+1))
+            else
+                output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+                if [[ "$output" != "" ]]; then
+                    ffmpegErrors+=("-------------")
+                    ffmpegErrors+=("Error occurred:")
+                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                    ffmpegErrors+=("fileJson: $fileJson")
+                fi
+                ffmpegErrors+=("$output")
+                touch -d "$ctTimestamp" "gphoto-output-mp4/${fileName}".mp4
+                mp4Suc=$(($mp4Suc+1))
             fi
-            ffmpegErrors+=("$output")
-            
         else
-            output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
-            if [[ "$output" != "" ]]; then
-                ffmpegErrors+=("-------------")
-                ffmpegErrors+=("Error occurred:")
-                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                ffmpegErrors+=("fileJson: $fileJson")
-            fi
-            ffmpegErrors+=("$output")
+            ffmpegErrors+=("-------------")
+            ffmpegErrors+=("Error occurred:")
+            ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+            ffmpegErrors+=("fileJson: $fileJson")
+            ffmpegErrors+=("updater-error: File ${fileName} is not found")
         fi
-
-        touch -d "$ctTimestamp" "gphoto-output-mp4/${fileName}".mp4
-
-
-
-        mp4Suc=$(($mp4Suc+1))
 
     elif [[ "$title" == *".mov"* ]]; then
         fileName="${title%.mov}"
@@ -145,33 +148,41 @@ for json_file in *.json; do
 
         altitude=$(jq -r '.geoData.altitude' "$json_file")
 
-        if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-            output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
-            if [[ "$output" != "" ]]; then
-                ffmpegErrors+=("-------------")
-                ffmpegErrors+=("Error occurred:")
-                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                ffmpegErrors+=("fileJson: $fileJson")
+        if [ -f "${fileName}.mov" ]; then
+            if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
+                output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
+                if [[ "$output" != "" ]]; then
+                    ffmpegErrors+=("-------------")
+                    ffmpegErrors+=("Error occurred:")
+                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                    ffmpegErrors+=("fileJson: $fileJson")
+                fi
+                ffmpegErrors+=("$output")
+                touch -d "$ctTimestamp" "gphoto-output-mov/${fileName}".mov
+                movSuc=$(($movSuc+1))
+            else
+                output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
+                exiftool -tagsfromfile "$json_file" "-gps:all<geoData" "${fileName}.mov"
+                if [[ "$output" != "" ]]; then
+                    ffmpegErrors+=("-------------")
+                    ffmpegErrors+=("Error occurred:")
+                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                    ffmpegErrors+=("fileJson: $fileJson")
+                fi
+                ffmpegErrors+=("$output")
+                touch -d "$ctTimestamp" "gphoto-output-mov/${fileName}".mov
+                movSuc=$(($movSuc+1))
             fi
-            ffmpegErrors+=("$output")
-            
         else
-            output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
-            exiftool -tagsfromfile "$json_file" "-gps:all<geoData" "${fileName}.mov"
-            if [[ "$output" != "" ]]; then
-                ffmpegErrors+=("-------------")
-                ffmpegErrors+=("Error occurred:")
-                ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                ffmpegErrors+=("fileJson: $fileJson")
-            fi
-            ffmpegErrors+=("$output")
+            ffmpegErrors+=("-------------")
+            ffmpegErrors+=("Error occurred:")
+            ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+            ffmpegErrors+=("fileJson: $fileJson")
+            ffmpegErrors+=("updater-error: File ${fileName} is not found")
         fi
 
-        touch -d "$ctTimestamp" "gphoto-output-mov/${fileName}".mov
-
-
-
-        movSuc=$(($movSuc+1))
+    
+        
 
     elif [[ "$title" == *".jpg"* ]]; then
         fileName="${title%.jpg}"

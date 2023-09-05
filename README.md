@@ -7,7 +7,7 @@ What it does?
 -------
 
 1. ~~Taking your export files and place it inside generated main folder on your local drive~~
-2. ~~Going throw all of this mess, taking info from json and placing it inside your multimedia files~~ (Only mp4 files are supported for now)
+2. Going throw all of this mess, taking info from json and placing it inside your multimedia files
 3. ~~Removes all json files in this main folder~~
 
 Also, here is the list of metadata supported:
@@ -15,7 +15,7 @@ Also, here is the list of metadata supported:
 | File type | Title | Description | File modification date | File creation date  | Geographic coords |
 |:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|
 | jpeg(jpg)  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
-| png  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| png  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10007;  |
 | webp  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | mp4  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;, via recode  |
@@ -37,9 +37,9 @@ To-do list:
 - [x] Human-readable ffmpeg errors
 - [x] .mov support
 - [x] .jpg support
+- [x] .png support
 - [ ] Library renamer (read below)
 - [ ] Recursive error solver
-- [ ] .png support
 - [ ] .webp support
 - [ ] .tiff support
 - [ ] Create a manual

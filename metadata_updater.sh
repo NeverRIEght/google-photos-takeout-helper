@@ -279,6 +279,11 @@ for json_file in *.json; do
         
             exiftool_output=$(eval "$exiftool_command")
 
+
+            mv "${fileName}.jpg" "gphoto-output-jpg/"
+            touch -d "$ptTimestamp" "gphoto-output-jpg/${fileName}.jpg"
+            jpgProc=$(($jpgProc+1))
+
             while IFS= read -r line; do
                 if [[ "$line" == *"Error"* ]]; then
                     ffmpegErrors+=("-------------")
@@ -291,8 +296,7 @@ for json_file in *.json; do
                     jpgSucc=$(($jpgSucc+1))
                 fi
             done <<< "$exiftool_output"
-            mv "${fileName}.jpg" "gphoto-output-jpg/"
-            jpgProc=$(($jpgProc+1))
+
         fi        
         
     elif [[ "$title" == *".png"* ]]; then

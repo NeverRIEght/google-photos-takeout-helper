@@ -20,6 +20,15 @@ for ext in jpg jpeg png heic tiff mp4 mov webp; do
   done
 done
 
+for file in *.JPG.* *.JPEG.* *.PNG.* *.TIFF.* *.WEBP.* *.MP4.* *.MOV.*; do
+    part1=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\1/')
+    part2=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\2/')
+    part3=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\3/')
+    newpart2=$(echo "$part2" | tr '[:upper:]' '[:lower:]')
+    mv "$file" "${part1}${newpart2}${part3}"  # Изменение регистра имени и расширения
+done
+
+
 
 
 # Counters
@@ -114,6 +123,13 @@ for json_file in *.json; do
     
     jsonScanned=$(($jsonScanned+1))
     title=$(jq -r '.title' "$json_file")
+
+    part1=$(echo "$title" | sed 's/\(.*\)\(\.[^.]*\)$/\1/')
+    part2=$(echo "$title" | sed 's/\(.*\)\(\.[^.]*\)$/\2/')
+    newpart2=$(echo "$part2" | tr '[:upper:]' '[:lower:]')
+    title="${part1}${newpart2}"
+
+    echo "$title"
 
     fileName=""
     fileExtesion=""
@@ -320,15 +336,11 @@ for json_file in *.json; do
 
 done
 
-# exiftool -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
-#     '-Title<${Title;$_ = $val if $val}' \
-#     '-Description<${Description;$_ = $val if $val}' \
-#     '-CreateDate<${PhotoTakenTime.timestamp;$_ = $val if $val}' \
-#     '-ModifyDate<${PhotoTakenTime.timestamp;$_ = $val if $val}' \
-#     '-GPSLatitude<${GeoData.latitude;$_ = $val if $val}' \
-#     '-GPSLongitude<${GeoData.longitude;$_ = $val if $val}' \
-#     '-GPSAltitude<${GeoData.altitude;$_ = $val if $val}' \
-#     '*.jpg'
+for mp4_file in *.mp4; do
+    fileName="${title%.mp4}"
+    fileExtesion=".mp4"
+    fileJson="${mp4_file}.json"
+done
 
 echo "Finishing the report..."
 ffmpegErrors=("${ffmpegErrors[@]//[$'\r\n']/}")

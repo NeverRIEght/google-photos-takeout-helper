@@ -14,20 +14,41 @@
 #.geoDataExif.latitudeSpan
 #.geoDataExif.longitudeSpan
 
+dot="."
+
 for ext in jpg jpeg png heic tiff mp4 mov webp; do
+    clear
+    echo "Fixing multimedia files extensions$dot"
+    dot=".."
   for file in *."$ext" *."$(echo "$ext" | tr '[:lower:]' '[:upper:]')"; do
     mv "$file" "${file%.*}.$(echo "${file##*.}" | tr '[:upper:]' '[:lower:]')"
+    clear
+    echo "Fixing multimedia files extensions$dot"
+    dot="."
   done
 done
 
+clear
+    echo "Multimedia files extensions fixed"
+    dot="."
+
 for file in *.JPG.* *.JPEG.* *.PNG.* *.TIFF.* *.WEBP.* *.MP4.* *.MOV.*; do
+    clear
+    echo "Fixing json files extensions$dot"
+    dot=".."
     part1=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\1/')
     part2=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\2/')
     part3=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\3/')
     newpart2=$(echo "$part2" | tr '[:upper:]' '[:lower:]')
     mv "$file" "${part1}${newpart2}${part3}"  # Изменение регистра имени и расширения
+    clear
+    echo "Fixing json files extensions$dot"
+    dot="."
 done
 
+clear
+echo "Multimedia files extensions fixed"
+echo "Json files extensions fixed"
 
 
 
@@ -39,29 +60,31 @@ jsonAllCount=$(find . -type f -name "*.json" | wc -l)
 trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
 jsonAllCount="$trimmed_string"
 
-mp4AllCount=$(find . -type f -name "*.mp4" | wc -l)
-trimmed_string=$(echo "$mp4AllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-mp4AllCount="$trimmed_string"
+mp4AllCount=0
+movAllCount=0
+jpgAllCount=0
+pngAllCount=0
+webpAllCount=0
+tiffAllCount=0
 
-movAllCount=$(find . -type f -name "*.mov" | wc -l)
-trimmed_string=$(echo "$movAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-movAllCount="$trimmed_string"
-
-jpgAllCount=$(find . -type f -name "*.jpg" | wc -l)
-trimmed_string=$(echo "$jpgAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-jpgAllCount="$trimmed_string"
-
-pngAllCount=$(find . -type f -name "*.png" | wc -l)
-trimmed_string=$(echo "$pngAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-pngAllCount="$trimmed_string"
-
-webpAllCount=$(find . -type f -name "*.webp" | wc -l)
-trimmed_string=$(echo "$webpAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-webpAllCount="$trimmed_string"
-
-tiffAllCount=$(find . -type f -name "*.tiff" | wc -l)
-trimmed_string=$(echo "$tiffAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-tiffAllCount="$trimmed_string"
+for file in *.mp4; do
+    mp4AllCount=$(($mp4AllCount+1))
+done
+for file in *.mov; do
+    movAllCount=$(($movAllCount+1))
+done
+for file in *.jpg; do
+    jpgAllCount=$(($jpgAllCount+1))
+done
+for file in *.png; do
+    pngAllCount=$(($pngAllCount+1))
+done
+for file in *.webp; do
+    webpAllCount=$(($webpAllCount+1))
+done
+for file in *.tiff; do
+    tiffAllCount=$(($tiffAllCount+1))
+done
 
 #File types
 
@@ -166,6 +189,8 @@ for json_file in *.json; do
                     mp4Err=$(($mp4Err+1))
                 else
                     touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
+                    rm "${fileName}.mp4"
+                    rm "${json_file}"
                     mp4Succ=$(($mp4Succ+1))
                 fi
                 mp4Proc=$(($mp4Proc+1))
@@ -180,6 +205,8 @@ for json_file in *.json; do
                     mp4Err=$(($mp4Err+1))
                 else
                     touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
+                    rm "${fileName}.mp4"
+                    rm "${json_file}"
                     mp4Succ=$(($mp4Succ+1))
                 fi
                 mp4Proc=$(($mp4Proc+1))
@@ -222,6 +249,8 @@ for json_file in *.json; do
                     movErr=$(($movErr+1))
                 else
                     touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
+                    rm "${fileName}.mov"
+                    rm "${json_file}"
                     movSucc=$(($movSucc+1))
                 fi
                 movProc=$(($movProc+1))
@@ -237,6 +266,8 @@ for json_file in *.json; do
                     movErr=$(($movErr+1))
                 else
                     touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
+                    rm "${fileName}.mov"
+                    rm "${json_file}"
                     movSucc=$(($movSucc+1))
                 fi
                 movProc=$(($movProc+1))
@@ -281,6 +312,7 @@ for json_file in *.json; do
 
 
             mv "${fileName}.jpg" "gphoto-output-jpg/"
+            rm "${json_file}"
             touch -d "$ptTimestamp" "gphoto-output-jpg/${fileName}.jpg"
             jpgProc=$(($jpgProc+1))
 
@@ -321,6 +353,7 @@ for json_file in *.json; do
 
 
             mv "${fileName}.png" "gphoto-output-png/"
+            rm "${json_file}"
             touch -d "$ptTimestamp" "gphoto-output-png/${fileName}.png"
             pngProc=$(($pngProc+1))
 
@@ -352,6 +385,8 @@ for json_file in *.json; do
     fi
 
     clear
+    echo "Multimedia files extensions fixed"
+    echo "Json files extensions fixed"
     echo "Processed $jsonScanned / $jsonAllCount json files"
     echo ""
     echo "Total in folder: $jpgAllCount jpg"

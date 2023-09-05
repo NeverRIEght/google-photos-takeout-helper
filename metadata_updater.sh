@@ -300,10 +300,45 @@ for json_file in *.json; do
         fi        
         
     elif [[ "$title" == *".png"* ]]; then
+
         fileName="${title%.png}"
         fileExtesion=".png"
         fileJson="$json_file"
-        pngScanned=$(($pngScanned+1))
+
+
+        description=$(jq -r '.description' "$json_file")
+        ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
+        ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
+
+        if [ -f "${fileName}.png" ]; then
+            pngFound=$(($pngFound+1))
+            exiftool_command="exiftool -v3 -Title='Заголовок'
+                                           -Description='Описание'
+                                           -CreationTime='2023:08:23 07:47:42'
+                                           'IMG_4573.png' 2>&1 >/dev/null"
+        
+            exiftool_output=$(eval "$exiftool_command")
+
+
+            mv "${fileName}.png" "gphoto-output-png/"
+            touch -d "$ptTimestamp" "gphoto-output-png/${fileName}.png"
+            pngProc=$(($pngProc+1))
+
+            while IFS= read -r line; do
+                if [[ "$line" == *"Error"* ]]; then
+                    ffmpegErrors+=("-------------")
+                    ffmpegErrors+=("Error occurred:")
+                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+                    ffmpegErrors+=("fileJson: $fileJson")
+                    ffmpegErrors+=("$line")
+                    pngErr=$(($pngErr+1))
+                else
+                    pngSucc=$(($pngSucc+1))
+                fi
+            done <<< "$exiftool_output"
+        fi
+
+
     elif [[ "$title" == *".webp"* ]]; then
         fileName="${title%.webp}"
         fileExtesion=".webp"

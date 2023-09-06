@@ -1,92 +1,64 @@
-#json fields
-
-
-#ptTimestamp=".photoTakenTime.timestamp"
-#ptFormatted=".photoTakenTime.formatted"
-#gdLatitude=".geoData.latitude"
-#.geoData.longitude
-#.geoData.altitude
-#.geoData.latitudeSpan
-#.geoData.longitudeSpan
-#.geoDataExif.latitude
-#.geoDataExif.longitude
-#.geoDataExif.altitude
-#.geoDataExif.latitudeSpan
-#.geoDataExif.longitudeSpan
-
+#Defines the awesome dot variable
 dot="."
 
-for ext in jpg jpeg png heic tiff mp4 mov webp; do
+#Fix file names and extensions
+
+for file in *; do
+
     clear
-    echo "Fixing multimedia files extensions$dot"
+    echo "Fixing file names and extensions$dot"
     dot=".."
-    for file in *."$ext" *."$(echo "$ext" | tr '[:lower:]' '[:upper:]')"; do
-        echo "Fixing multimedia files extensions$dot"
-        dot="."
-        mv "$file" "${file%.*}.$(echo "${file##*.}" | tr '[:upper:]' '[:lower:]')"
-        clear
-        echo "Fixing multimedia files extensions$dot"
-        dot=".."
-    done
-    echo "Fixing multimedia files extensions$dot"
+
+    filename=$(echo "$file" | sed 's/\(.*\)\.[^.]*$/\1/')
+    extension=$(echo "$file" | sed 's/.*\.\([^.]*\)$/\1/')
+    new_extension=$(echo "$extension" | tr '[:upper:]' '[:lower:]')
+    extension="$new_extension"
+
+    if [[ "$extension" =~ ^(jpg|jpeg|png|tiff|webp|mp4|mov)$ ]]; then
+        new_extension=$(echo "$extension" | tr '[:upper:]' '[:lower:]')
+        extension="$new_extension"
+        extension2=""
+        mv "$file" "${filename}.${extension}"
+
+    elif [[ "$extension" = "json" ]]; then
+        extension2=$(echo "$filename" | sed 's/.*\.\([^.]*\)$/\1/')
+        filename2=$(echo "$filename" | sed 's/\(.*\)\.[^.]*$/\1/')
+        filename="$filename2"
+        new_extension="$extension2.$extension"
+        extension="$new_extension"
+
+        new_extension=$(echo "$extension" | tr '[:upper:]' '[:lower:]')
+        extension="$new_extension"
+
+        extension2=""
+
+        extension1=$(echo "$extension" | sed 's/\(.*\)\.[^.]*$/\1/')
+        extension2=$(echo "$extension" | sed 's/.*\.\([^.]*\)$/\1/')
+
+        if [[ "$extension1" =~ \(.*\) ]]; then
+            extracted_string=$(echo "$extension1" | sed 's/.*\(([^)]*)\).*/\1/')
+            cleaned_string=$(echo "$extension1" | sed 's/([^)]*)//g')
+            extension1=$cleaned_string
+
+            filename2="${filename}${extracted_string}"
+            filename="$filename2"
+        fi
+
+        mv "$file" "${filename}.${extension1}.${extension2}"
+    fi
+
+    clear
+    echo "Fixing file names and extensions$dot"
     dot="."
 done
 
 clear
-    echo "Multimedia files extensions fixed"
-    dot="."
-
-for file in *.JPG.* *.JPEG.* *.PNG.* *.TIFF.* *.WEBP.* *.MP4.* *.MOV.*; do
-    clear
-    echo "Fixing json files extensions$dot"
-    dot=".."
-    part1=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\1/')
-    part2=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\2/')
-    part3=$(echo "$file" | sed 's/\(.*\)\(\.[^.]*\)\(\.[^.]*\)$/\3/')
-    newpart2=$(echo "$part2" | tr '[:upper:]' '[:lower:]')
-    mv "$file" "${part1}${newpart2}${part3}"  # Изменение регистра имени и расширения
-    clear
-    echo "Fixing json files extensions$dot"
-    dot="."
-done
-
-clear
-echo "Multimedia files extensions fixed"
-echo "Json files extensions fixed"
-
-
-# IMG_0332.png(1).json
-
-
-for file in *.jpg\(*\).* *.jpeg\(*\).* *.png\(*\).* *.tiff\(*\).* *.webp\(*\).* *.mp4\(*\).* *.mov\(*\).*; do
-    clear
-    echo "Fixing brackets in files names$dot"
-    dot=".."
-
-    # Извлекаем части имени файла
-    part1=$(echo "$file" | sed 's/\(^[^.]*\)\./\1/')
-    part2=$(echo "$file" | sed 's/^[^.]*\.\([^(]*\)/\1/')
-    part3=$(echo "$file" | sed 's/^[^.]*\.[^(]*\(.*\)/\1/')
-    part4=$(echo "$file" | sed 's/^[^.]*\.[^(]*\(.*\)/\2/')
-
-    # Объединяем части, переставляя скобки с цифрой
-    new_name="${part1}${part3}${part2}${part4}"
-    mv "$file" "$new_name"
-    
-    clear
-    echo "Fixing brackets in files names$dot"
-    dot="."
-done
-
-
+echo "Fixed file names and extensions."
+dot="."
 
 # Counters
 
 #Count of all types of files inside the current folder
-
-jsonAllCount=$(find . -type f -name "*.json" | wc -l)
-trimmed_string=$(echo "$jsonAllCount" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
-jsonAllCount="$trimmed_string"
 
 mp4AllCount=0
 movAllCount=0
@@ -95,6 +67,9 @@ pngAllCount=0
 webpAllCount=0
 tiffAllCount=0
 
+for file in *.json; do
+    jsonAllCount=$(($jsonAllCount+1))
+done
 for file in *.mp4; do
     mp4AllCount=$(($mp4AllCount+1))
 done
@@ -148,20 +123,12 @@ tiffErr=0
 
 ffmpegErrors=()
 
-#Fix files names
-# exiftool -ext json -r -if '$Filename=~/(\.[^.]+)(\(\d+\)).json$$/i'  '-Filename<${Filename;s/(\.[^.]+)(\(\d+\)).json$/$2$1.json/}' .
-
-#Write jpg metadata
-# exiftool -d %s -tagsfromfile '%d/%F.json' '-GPSLatitude*<${GeoDataLatitude;$_ = undef if $_ eq "0.0"}' '-GPSLongitude*<${GeoDataLongitude;$_ = undef if $_ eq "0.0"}' '-Caption-Abstract<Description' '-Description<Description' '-XMP-xmp:Rating<${Favorited;$_=5 if $_=~/true/i}' '-AllDates<PhotoTakenTimeTimestamp' -execute '-FileCreateDate<ExifIFD:DateTimeOriginal' '-FileModifyDate<ExifIFD:DateTimeOriginal' -common_args -overwrite_original_in_place -ext jpg .
-# exiftool -d %s -tagsfromfile '%d/%F.json' '-GPSLatitude*<${GeoDataLatitude;$_ = undef if $_ eq "0.0"}' '-GPSLongitude*<${GeoDataLongitude;$_ = undef if $_ eq "0.0"}' '-Caption-Abstract<Description' '-Description<Description' '-XMP-xmp:Rating<${Favorited;$_=5 if $_=~/true/i}' '-AllDates<PhotoTakenTimeTimestamp' -execute '-FileCreateDate<ExifIFD:DateTimeOriginal' '-FileModifyDate<ExifIFD:DateTimeOriginal' -common_args -overwrite_original_in_place -ext jpeg .
-
 rmdir gphoto-output-mp4/
 rmdir gphoto-output-mov/
 rmdir gphoto-output-jpg/
 rmdir gphoto-output-png/
 rmdir gphoto-output-webp/
 rmdir gphoto-output-tiff/
-
 
 mkdir gphoto-output-mp4
 mkdir gphoto-output-mov
@@ -170,11 +137,9 @@ mkdir gphoto-output-png
 mkdir gphoto-output-webp
 mkdir gphoto-output-tiff
 
-
-
 #First scan
 for json_file in *.json; do
-    
+
     jsonScanned=$(($jsonScanned+1))
     title=$(jq -r '.title' "$json_file")
 
@@ -189,13 +154,11 @@ for json_file in *.json; do
     fileExtesion=""
     fileJson=""
 
-
     if [[ "$title" == *".mp4"* ]]; then
-        
+
         fileName="${title%.mp4}"
         fileExtesion=".mp4"
         fileJson="$json_file"
-        
 
         description=$(jq -r '.description' "$json_file")
         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
@@ -205,7 +168,6 @@ for json_file in *.json; do
         latitude=$(jq -r '.geoData.latitude' "$json_file")
         longitude=$(jq -r '.geoData.longitude' "$json_file")
         altitude=$(jq -r '.geoData.altitude' "$json_file")
-
 
         if [ -f "${fileName}.mp4" ]; then
             mp4Found=$(($mp4Found+1))
@@ -256,7 +218,6 @@ for json_file in *.json; do
         fileExtesion=".mov"
         fileJson="$json_file"
 
-
         description=$(jq -r '.description' "$json_file")
         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
         ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
@@ -265,7 +226,6 @@ for json_file in *.json; do
         latitude=$(jq -r '.geoData.latitude' "$json_file")
         longitude=$(jq -r '.geoData.longitude' "$json_file")
         altitude=$(jq -r '.geoData.altitude' "$json_file")
-
 
         if [ -f "${fileName}.mov" ]; then
             movFound=$(($movFound+1))
@@ -312,11 +272,10 @@ for json_file in *.json; do
         fi
 
     elif [[ "$title" == *".jpg"* ]]; then
-    
+
         fileName="${title%.jpg}"
         fileExtesion=".jpg"
         fileJson="$json_file"
-
 
         description=$(jq -r '.description' "$json_file")
         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
@@ -338,9 +297,8 @@ for json_file in *.json; do
                     '-GPSLongitude=$longitude' \
                     '-GPSAltitude=$altitude' \
                     '${fileName}.jpg' 2>&1 >/dev/null"
-        
-            exiftool_output=$(eval "$exiftool_command")
 
+            exiftool_output=$(eval "$exiftool_command")
 
             mv "${fileName}.jpg" "gphoto-output-jpg/"
             rm "${json_file}"
@@ -360,14 +318,13 @@ for json_file in *.json; do
                 fi
             done <<< "$exiftool_output"
 
-        fi        
-        
+        fi
+
     elif [[ "$title" == *".png"* ]]; then
 
         fileName="${title%.png}"
         fileExtesion=".png"
         fileJson="$json_file"
-
 
         description=$(jq -r '.description' "$json_file")
         ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
@@ -379,9 +336,8 @@ for json_file in *.json; do
                                            -Description='Описание'
                                            -CreationTime='2023:08:23 07:47:42'
                                            'IMG_4573.png' 2>&1 >/dev/null"
-        
-            exiftool_output=$(eval "$exiftool_command")
 
+            exiftool_output=$(eval "$exiftool_command")
 
             mv "${fileName}.png" "gphoto-output-png/"
             rm "${json_file}"
@@ -401,7 +357,6 @@ for json_file in *.json; do
                 fi
             done <<< "$exiftool_output"
         fi
-
 
     elif [[ "$title" == *".webp"* ]]; then
         fileName="${title%.webp}"
@@ -440,280 +395,266 @@ for json_file in *.json; do
     echo ""
 
 done
-
-
-
-
 
 #Second scan
-for json_file in *.json; do
-    
-    jsonScanned=$(($jsonScanned+1))
-    title=$(jq -r '.title' "$json_file")
-    title="${json_file%.json}"
+# for json_file in *.json; do
 
-    part1=$(echo "$title" | sed 's/\(.*\)\(\.[^.]*\)$/\1/')
-    part2=$(echo "$title" | sed 's/\(.*\)\(\.[^.]*\)$/\2/')
-    newpart2=$(echo "$part2" | tr '[:upper:]' '[:lower:]')
-    title="${part1}${newpart2}"
+#     jsonScanned=$(($jsonScanned+1))
+#     title=$(jq -r '.title' "$json_file")
+#     title="${json_file%.json}"
 
-    echo "$title"
+#     part1=$(echo "$title" | sed 's/\(.*\)\(\.[^.]*\)$/\1/')
+#     part2=$(echo "$title" | sed 's/\(.*\)\(\.[^.]*\)$/\2/')
+#     newpart2=$(echo "$part2" | tr '[:upper:]' '[:lower:]')
+#     title="${part1}${newpart2}"
 
-    fileName=""
-    fileExtesion=""
-    fileJson=""
+#     echo "$title"
 
+#     fileName=""
+#     fileExtesion=""
+#     fileJson=""
 
-    if [[ "$title" == *".mp4"* ]]; then
-        
-        fileName="${title%.mp4}"
-        fileExtesion=".mp4"
-        fileJson="$json_file"
-        
+#     if [[ "$title" == *".mp4"* ]]; then
 
-        description=$(jq -r '.description' "$json_file")
-        ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
-        ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
-        ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
-        ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
-        latitude=$(jq -r '.geoData.latitude' "$json_file")
-        longitude=$(jq -r '.geoData.longitude' "$json_file")
-        altitude=$(jq -r '.geoData.altitude' "$json_file")
+#         fileName="${title%.mp4}"
+#         fileExtesion=".mp4"
+#         fileJson="$json_file"
 
+#         description=$(jq -r '.description' "$json_file")
+#         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
+#         ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
+#         ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
+#         ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
+#         latitude=$(jq -r '.geoData.latitude' "$json_file")
+#         longitude=$(jq -r '.geoData.longitude' "$json_file")
+#         altitude=$(jq -r '.geoData.altitude' "$json_file")
 
-        if [ -f "${fileName}.mp4" ]; then
-            mp4Found=$(($mp4Found+1))
-            if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-                output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
-                if [[ "$output" != "" ]]; then
-                    ffmpegErrors+=("-------------")
-                    ffmpegErrors+=("Error occurred:")
-                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                    ffmpegErrors+=("fileJson: $fileJson")
-                    ffmpegErrors+=("$output")
-                    mp4Err=$(($mp4Err+1))
-                else
-                    touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
-                    rm "${fileName}.mp4"
-                    rm "${json_file}"
-                    mp4Succ=$(($mp4Succ+1))
-                fi
-                mp4Proc=$(($mp4Proc+1))
-            else
-                output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
-                if [[ "$output" != "" ]]; then
-                    ffmpegErrors+=("-------------")
-                    ffmpegErrors+=("Error occurred:")
-                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                    ffmpegErrors+=("fileJson: $fileJson")
-                    ffmpegErrors+=("$output")
-                    mp4Err=$(($mp4Err+1))
-                else
-                    touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
-                    rm "${fileName}.mp4"
-                    rm "${json_file}"
-                    mp4Succ=$(($mp4Succ+1))
-                fi
-                mp4Proc=$(($mp4Proc+1))
-            fi
-        else
-            ffmpegErrors+=("-------------")
-            ffmpegErrors+=("Error occurred:")
-            ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-            ffmpegErrors+=("fileJson: $fileJson")
-            ffmpegErrors+=("updater-error: File ${fileName} is not found")
-        fi
+#         if [ -f "${fileName}.mp4" ]; then
+#             mp4Found=$(($mp4Found+1))
+#             if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
+#                 output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -c:v copy -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+#                 if [[ "$output" != "" ]]; then
+#                     ffmpegErrors+=("-------------")
+#                     ffmpegErrors+=("Error occurred:")
+#                     ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#                     ffmpegErrors+=("fileJson: $fileJson")
+#                     ffmpegErrors+=("$output")
+#                     mp4Err=$(($mp4Err+1))
+#                 else
+#                     touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
+#                     rm "${fileName}.mp4"
+#                     rm "${json_file}"
+#                     mp4Succ=$(($mp4Succ+1))
+#                 fi
+#                 mp4Proc=$(($mp4Proc+1))
+#             else
+#                 output=$(ffmpeg -loglevel error -y -i "${fileName}".mp4 -metadata title="${title}" -metadata description="${description}" -vf "geolocation=latitude=$latitude:longitude=$longitude:altitude=$altitude" -c:v libx264 -c:a copy "gphoto-output-mp4/${fileName}".mp4 2>&1) #2>&1 >/dev/null)
+#                 if [[ "$output" != "" ]]; then
+#                     ffmpegErrors+=("-------------")
+#                     ffmpegErrors+=("Error occurred:")
+#                     ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#                     ffmpegErrors+=("fileJson: $fileJson")
+#                     ffmpegErrors+=("$output")
+#                     mp4Err=$(($mp4Err+1))
+#                 else
+#                     touch -d "$ptTimestamp" "gphoto-output-mp4/${fileName}".mp4
+#                     rm "${fileName}.mp4"
+#                     rm "${json_file}"
+#                     mp4Succ=$(($mp4Succ+1))
+#                 fi
+#                 mp4Proc=$(($mp4Proc+1))
+#             fi
+#         else
+#             ffmpegErrors+=("-------------")
+#             ffmpegErrors+=("Error occurred:")
+#             ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#             ffmpegErrors+=("fileJson: $fileJson")
+#             ffmpegErrors+=("updater-error: File ${fileName} is not found")
+#         fi
 
-    elif [[ "$title" == *".mov"* ]]; then
+#     elif [[ "$title" == *".mov"* ]]; then
 
-        fileName="${title%.mov}"
-        fileExtesion=".mov"
-        fileJson="$json_file"
+#         fileName="${title%.mov}"
+#         fileExtesion=".mov"
+#         fileJson="$json_file"
 
+#         description=$(jq -r '.description' "$json_file")
+#         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
+#         ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
+#         ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
+#         ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
+#         latitude=$(jq -r '.geoData.latitude' "$json_file")
+#         longitude=$(jq -r '.geoData.longitude' "$json_file")
+#         altitude=$(jq -r '.geoData.altitude' "$json_file")
 
-        description=$(jq -r '.description' "$json_file")
-        ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
-        ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
-        ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
-        ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
-        latitude=$(jq -r '.geoData.latitude' "$json_file")
-        longitude=$(jq -r '.geoData.longitude' "$json_file")
-        altitude=$(jq -r '.geoData.altitude' "$json_file")
+#         if [ -f "${fileName}.mov" ]; then
+#             movFound=$(($movFound+1))
+#             if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
+#                 output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
+#                 if [[ "$output" != "" ]]; then
+#                     ffmpegErrors+=("-------------")
+#                     ffmpegErrors+=("Error occurred:")
+#                     ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#                     ffmpegErrors+=("fileJson: $fileJson")
+#                     ffmpegErrors+=("$output")
+#                     movErr=$(($movErr+1))
+#                 else
+#                     touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
+#                     rm "${fileName}.mov"
+#                     rm "${json_file}"
+#                     movSucc=$(($movSucc+1))
+#                 fi
+#                 movProc=$(($movProc+1))
+#             else
+#                 output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
+#                 exiftool -tagsfromfile "$json_file" "-gps:all<geoData" "${fileName}.mov"
+#                 if [[ "$output" != "" ]]; then
+#                     ffmpegErrors+=("-------------")
+#                     ffmpegErrors+=("Error occurred:")
+#                     ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#                     ffmpegErrors+=("fileJson: $fileJson")
+#                     ffmpegErrors+=("$output")
+#                     movErr=$(($movErr+1))
+#                 else
+#                     touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
+#                     rm "${fileName}.mov"
+#                     rm "${json_file}"
+#                     movSucc=$(($movSucc+1))
+#                 fi
+#                 movProc=$(($movProc+1))
+#             fi
+#         else
+#             ffmpegErrors+=("-------------")
+#             ffmpegErrors+=("Error occurred:")
+#             ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#             ffmpegErrors+=("fileJson: $fileJson")
+#             ffmpegErrors+=("updater-error: File ${fileName} is not found")
+#         fi
 
+#     elif [[ "$title" == *".jpg"* ]]; then
 
-        if [ -f "${fileName}.mov" ]; then
-            movFound=$(($movFound+1))
-            if [[ "$latitude" == 0 ]] && [[ "$longitude" == 0 ]]; then
-                output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
-                if [[ "$output" != "" ]]; then
-                    ffmpegErrors+=("-------------")
-                    ffmpegErrors+=("Error occurred:")
-                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                    ffmpegErrors+=("fileJson: $fileJson")
-                    ffmpegErrors+=("$output")
-                    movErr=$(($movErr+1))
-                else
-                    touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
-                    rm "${fileName}.mov"
-                    rm "${json_file}"
-                    movSucc=$(($movSucc+1))
-                fi
-                movProc=$(($movProc+1))
-            else
-                output=$(ffmpeg -loglevel error -y -i "${fileName}".mov -metadata title="${title}" -metadata description="${description}" -metadata creation_time="${ctTimestamp}" -c:v copy -c:a copy "gphoto-output-mov/${fileName}".mov 2>&1) #2>&1 >/dev/null)
-                exiftool -tagsfromfile "$json_file" "-gps:all<geoData" "${fileName}.mov"
-                if [[ "$output" != "" ]]; then
-                    ffmpegErrors+=("-------------")
-                    ffmpegErrors+=("Error occurred:")
-                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                    ffmpegErrors+=("fileJson: $fileJson")
-                    ffmpegErrors+=("$output")
-                    movErr=$(($movErr+1))
-                else
-                    touch -d "$ptTimestamp" "gphoto-output-mov/${fileName}".mov
-                    rm "${fileName}.mov"
-                    rm "${json_file}"
-                    movSucc=$(($movSucc+1))
-                fi
-                movProc=$(($movProc+1))
-            fi
-        else
-            ffmpegErrors+=("-------------")
-            ffmpegErrors+=("Error occurred:")
-            ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-            ffmpegErrors+=("fileJson: $fileJson")
-            ffmpegErrors+=("updater-error: File ${fileName} is not found")
-        fi
+#         fileName="${title%.jpg}"
+#         fileExtesion=".jpg"
+#         fileJson="$json_file"
 
-    elif [[ "$title" == *".jpg"* ]]; then
-    
-        fileName="${title%.jpg}"
-        fileExtesion=".jpg"
-        fileJson="$json_file"
+#         description=$(jq -r '.description' "$json_file")
+#         ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
+#         ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
+#         ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
+#         ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
+#         latitude=$(jq -r '.geoData.latitude' "$json_file")
+#         longitude=$(jq -r '.geoData.longitude' "$json_file")
+#         altitude=$(jq -r '.geoData.altitude' "$json_file")
 
+#         if [ -f "${fileName}.jpg" ]; then
+#             jpgFound=$(($jpgFound+1))
+#             exiftool_command="exiftool -v3 -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
+#                     '-Title=$title' \
+#                     '-Description=$description' \
+#                     '-CreateDate=$ptTimestamp' \
+#                     '-ModifyDate=$ptTimestamp' \
+#                     '-GPSLatitude=$latitude' \
+#                     '-GPSLongitude=$longitude' \
+#                     '-GPSAltitude=$altitude' \
+#                     '${fileName}.jpg' 2>&1 >/dev/null"
 
-        description=$(jq -r '.description' "$json_file")
-        ctTimestamp=$(jq -r '.creationTime.timestamp' "$json_file")
-        ctTimestamp=$(date -u -r "$ctTimestamp" +"%Y-%m-%d %H:%M:%S")
-        ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
-        ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
-        latitude=$(jq -r '.geoData.latitude' "$json_file")
-        longitude=$(jq -r '.geoData.longitude' "$json_file")
-        altitude=$(jq -r '.geoData.altitude' "$json_file")
+#             exiftool_output=$(eval "$exiftool_command")
 
-        if [ -f "${fileName}.jpg" ]; then
-            jpgFound=$(($jpgFound+1))
-            exiftool_command="exiftool -v3 -d '%Y:%m:%d %H:%M:%S' -overwrite_original \
-                    '-Title=$title' \
-                    '-Description=$description' \
-                    '-CreateDate=$ptTimestamp' \
-                    '-ModifyDate=$ptTimestamp' \
-                    '-GPSLatitude=$latitude' \
-                    '-GPSLongitude=$longitude' \
-                    '-GPSAltitude=$altitude' \
-                    '${fileName}.jpg' 2>&1 >/dev/null"
-        
-            exiftool_output=$(eval "$exiftool_command")
+#             mv "${fileName}.jpg" "gphoto-output-jpg/"
+#             rm "${json_file}"
+#             touch -d "$ptTimestamp" "gphoto-output-jpg/${fileName}.jpg"
+#             jpgProc=$(($jpgProc+1))
 
+#             while IFS= read -r line; do
+#                 if [[ "$line" == *"Error"* ]]; then
+#                     ffmpegErrors+=("-------------")
+#                     ffmpegErrors+=("Error occurred:")
+#                     ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#                     ffmpegErrors+=("fileJson: $fileJson")
+#                     ffmpegErrors+=("$line")
+#                     jpgErr=$(($jpgErr+1))
+#                 else
+#                     jpgSucc=$(($jpgSucc+1))
+#                 fi
+#             done <<< "$exiftool_output"
 
-            mv "${fileName}.jpg" "gphoto-output-jpg/"
-            rm "${json_file}"
-            touch -d "$ptTimestamp" "gphoto-output-jpg/${fileName}.jpg"
-            jpgProc=$(($jpgProc+1))
+#         fi
 
-            while IFS= read -r line; do
-                if [[ "$line" == *"Error"* ]]; then
-                    ffmpegErrors+=("-------------")
-                    ffmpegErrors+=("Error occurred:")
-                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                    ffmpegErrors+=("fileJson: $fileJson")
-                    ffmpegErrors+=("$line")
-                    jpgErr=$(($jpgErr+1))
-                else
-                    jpgSucc=$(($jpgSucc+1))
-                fi
-            done <<< "$exiftool_output"
+#     elif [[ "$title" == *".png"* ]]; then
 
-        fi        
-        
-    elif [[ "$title" == *".png"* ]]; then
+#         fileName="${title%.png}"
+#         fileExtesion=".png"
+#         fileJson="$json_file"
 
-        fileName="${title%.png}"
-        fileExtesion=".png"
-        fileJson="$json_file"
+#         description=$(jq -r '.description' "$json_file")
+#         ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
+#         ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
 
+#         if [ -f "${fileName}.png" ]; then
+#             pngFound=$(($pngFound+1))
+#             exiftool_command="exiftool -v3 -Title='Заголовок'
+#                                            -Description='Описание'
+#                                            -CreationTime='2023:08:23 07:47:42'
+#                                            'IMG_4573.png' 2>&1 >/dev/null"
 
-        description=$(jq -r '.description' "$json_file")
-        ptTimestamp=$(jq -r '.photoTakenTime.timestamp' "$json_file")
-        ptTimestamp=$(date -u -r "$ptTimestamp" +"%Y-%m-%d %H:%M:%S")
+#             exiftool_output=$(eval "$exiftool_command")
 
-        if [ -f "${fileName}.png" ]; then
-            pngFound=$(($pngFound+1))
-            exiftool_command="exiftool -v3 -Title='Заголовок'
-                                           -Description='Описание'
-                                           -CreationTime='2023:08:23 07:47:42'
-                                           'IMG_4573.png' 2>&1 >/dev/null"
-        
-            exiftool_output=$(eval "$exiftool_command")
+#             mv "${fileName}.png" "gphoto-output-png/"
+#             rm "${json_file}"
+#             touch -d "$ptTimestamp" "gphoto-output-png/${fileName}.png"
+#             pngProc=$(($pngProc+1))
 
+#             while IFS= read -r line; do
+#                 if [[ "$line" == *"Error"* ]]; then
+#                     ffmpegErrors+=("-------------")
+#                     ffmpegErrors+=("Error occurred:")
+#                     ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
+#                     ffmpegErrors+=("fileJson: $fileJson")
+#                     ffmpegErrors+=("$line")
+#                     pngErr=$(($pngErr+1))
+#                 else
+#                     pngSucc=$(($pngSucc+1))
+#                 fi
+#             done <<< "$exiftool_output"
+#         fi
 
-            mv "${fileName}.png" "gphoto-output-png/"
-            rm "${json_file}"
-            touch -d "$ptTimestamp" "gphoto-output-png/${fileName}.png"
-            pngProc=$(($pngProc+1))
+#     elif [[ "$title" == *".webp"* ]]; then
+#         fileName="${title%.webp}"
+#         fileExtesion=".webp"
+#         fileJson="$json_file"
+#         webpScanned=$(($webpScanned+1))
+#     elif [[ "$title" == *".tiff"* ]]; then
+#         fileName="${title%.tiff}"
+#         fileExtesion=".tiff"
+#         fileJson="$json_file"
+#         tiffScanned=$(($tiffScanned+1))
+#     fi
 
-            while IFS= read -r line; do
-                if [[ "$line" == *"Error"* ]]; then
-                    ffmpegErrors+=("-------------")
-                    ffmpegErrors+=("Error occurred:")
-                    ffmpegErrors+=("fileName: ${fileName}${fileExtesion}")
-                    ffmpegErrors+=("fileJson: $fileJson")
-                    ffmpegErrors+=("$line")
-                    pngErr=$(($pngErr+1))
-                else
-                    pngSucc=$(($pngSucc+1))
-                fi
-            done <<< "$exiftool_output"
-        fi
+#     clear
+#     echo "Multimedia files extensions fixed"
+#     echo "Json files extensions fixed"
+#     echo "Processed $jsonScanned / $jsonAllCount json files"
+#     echo ""
+#     echo "Total in folder: $jpgAllCount jpg"
+#     echo "Found metadata / Processed / Success / Error (jpg): $jpgFound / $jpgProc / $jpgSucc / $jpgErr"
+#     echo ""
+#     echo "Total in folder: $pngAllCount png"
+#     echo "Found metadata / Processed / Success / Error (png): $pngFound / $pngProc / $pngSucc / $pngErr"
+#     echo ""
+#     echo "Total in folder: $webpAllCount webp"
+#     echo "Found metadata / Processed / Success / Error (webp): $webpFound / $webpProc / $webpSucc / $webpErr"
+#     echo ""
+#     echo "Total in folder: $tiffAllCount tiff"
+#     echo "Found metadata / Processed / Success / Error (tiff): $tiffFound / $tiffProc / $tiffSucc / $tiffErr"
+#     echo ""
+#     echo "Total in folder: $mp4AllCount mp4"
+#     echo "Found metadata / Processed / Success / Error (mp4): $mp4Found / $mp4Proc / $mp4Succ / $mp4Err"
+#     echo ""
+#     echo "Total in folder: $movAllCount mov"
+#     echo "Found metadata / Processed / Success / Error (mov): $movFound / $movProc / $movSucc / $movErr"
+#     echo ""
 
-
-    elif [[ "$title" == *".webp"* ]]; then
-        fileName="${title%.webp}"
-        fileExtesion=".webp"
-        fileJson="$json_file"
-        webpScanned=$(($webpScanned+1))
-    elif [[ "$title" == *".tiff"* ]]; then
-        fileName="${title%.tiff}"
-        fileExtesion=".tiff"
-        fileJson="$json_file"
-        tiffScanned=$(($tiffScanned+1))
-    fi
-
-    clear
-    echo "Multimedia files extensions fixed"
-    echo "Json files extensions fixed"
-    echo "Processed $jsonScanned / $jsonAllCount json files"
-    echo ""
-    echo "Total in folder: $jpgAllCount jpg"
-    echo "Found metadata / Processed / Success / Error (jpg): $jpgFound / $jpgProc / $jpgSucc / $jpgErr"
-    echo ""
-    echo "Total in folder: $pngAllCount png"
-    echo "Found metadata / Processed / Success / Error (png): $pngFound / $pngProc / $pngSucc / $pngErr"
-    echo ""
-    echo "Total in folder: $webpAllCount webp"
-    echo "Found metadata / Processed / Success / Error (webp): $webpFound / $webpProc / $webpSucc / $webpErr"
-    echo ""
-    echo "Total in folder: $tiffAllCount tiff"
-    echo "Found metadata / Processed / Success / Error (tiff): $tiffFound / $tiffProc / $tiffSucc / $tiffErr"
-    echo ""
-    echo "Total in folder: $mp4AllCount mp4"
-    echo "Found metadata / Processed / Success / Error (mp4): $mp4Found / $mp4Proc / $mp4Succ / $mp4Err"
-    echo ""
-    echo "Total in folder: $movAllCount mov"
-    echo "Found metadata / Processed / Success / Error (mov): $movFound / $movProc / $movSucc / $movErr"
-    echo ""
-
-done
+# done
 
 echo "Finishing the report..."
 ffmpegErrors=("${ffmpegErrors[@]//[$'\r\n']/}")
@@ -757,7 +698,6 @@ echo "Found metadata / Processed / Success / Error (mov): $movFound / $movProc /
 echo ""
 echo "Number of occured errors: $errNumber"
 echo "List of errors provided avove this section."
-
 
 # echo "Updated metadata in ${successCounter} mp4 files"
 # echo "Recoded ${recodedCounter} mp4 files to add geo info"

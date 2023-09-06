@@ -59,10 +59,21 @@ Written and tested on Macbook Pro 2020 with M1 chip.
 
 Usage (and explanation)
 -------
-### Warnings
+### WARNINGS
 
-I take NO responsibility for your files. Everything you do - you do at your own peril and risk.
+<b>I take NO responsibility for your files. Everything you do - you do at your own peril and risk.
 Please read the entire manual before doing anything. This will help you understand what's going on and what can go wrong.
+
+FOR THE USERS WITH >5000 FILES:
+
+
+I take NO responsibility for your hard drive state after the process. This script will check all of your photos TWICE, so
+please take care of your hard drive/HDD.
+
+I DO NOT RECOMEND TO PROCEED THE SCRIPT FOR 100.000+ FILES!
+
+
+Please, break your files into pieces to proceed them one by one!</b>
 
 ### Preparations
 

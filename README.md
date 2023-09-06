@@ -20,6 +20,7 @@ Also, here is the list of metadata supported:
 | tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
 | mp4  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;, via recode  |
 | mov  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
+| gif  | tbd  | tbd  | tbd  | tbd  | tbd  |
 
 
 <b>The table does not illustrate the structure of the metadata of the file type, but whether the final file will contain the data you need.</b>
@@ -42,6 +43,7 @@ To-do list:
 - [ ] Recursive error solver
 - [ ] .webp support
 - [ ] .tiff support
+- [ ] .gif support
 - [ ] Create a manual
 
 

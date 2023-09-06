@@ -32,19 +32,19 @@ Some commentaries to this table:
 - Linux is unfriendly when you need to change the creation date of a file. In some cases this is possible and in some it is not. Some of the formats listed in the table do not have such a metadata field at all, and even if one is added, most applications will not recognize this date. Despite this, the script will try to record the date the file was modified and the date the file was created, if possible. In this way, you will most likely get a file whose metadata says that the file was created and edited at the same time - the time at which this video / photo was originally taken. So, you will get an accurate date in most cases.
 - Geo coords is supported in mp4, but due to the peculiarities of ffmpeg, it is not possible to save the necessary metadata without video recoding. I assure you that the quality of the video when transcoding in this way remains approximately the same, if you look purely at the eye.
 
-To-do list:
+Project roadmap:
 - [x] Deserialization solution for json
 - [x] .mp4 support
-- [x] Human-readable ffmpeg errors
+- [x] Human-readable errors
 - [x] .mov support
 - [x] .jpg support
 - [x] .png support
-- [ ] Library renamer (read below)
+- [x] Extensions processing part
 - [ ] Recursive error solver
 - [ ] .webp support
 - [ ] .tiff support
 - [ ] .gif support
-- [ ] Create a manual
+- [ ] Guide to usage
 
 
 

@@ -47,6 +47,13 @@ for file in *; do
         mv "$file" "${filename}.${extension1}.${extension2}"
     fi
 
+    if [[ "$extension" == "png_original" ]]; then
+        extension2="${extension%_original}"
+        extension=$extension2
+        extension2=""
+        mv "$file" "${filename}.${extension}"
+    fi
+
     clear
     echo "Fixing file names and extensions$dot"
     dot="."
@@ -406,33 +413,18 @@ for json_file in *.json; do
         tiffScanned=$(($tiffScanned+1))
     fi
 
+    if [[ "$dot" == "." ]]; then
+        dot=".."
+    else
+        dot="."
+    fi
     clear
     echo "Multimedia files extensions fixed"
     echo "Json files extensions fixed"
-    echo "Processed $jsonScanned / $jsonAllCount json files"
-    echo ""
-    echo "Total in folder: $jpgAllCount jpg"
-    echo "Found metadata / Processed / Success / Error (jpg): $jpgFound / $jpgProc / $jpgSucc / $jpgErr"
-    echo ""
-    echo "Total in folder: $pngAllCount png"
-    echo "Found metadata / Processed / Success / Error (png): $pngFound / $pngProc / $pngSucc / $pngErr"
-    echo ""
-    echo "Total in folder: $webpAllCount webp"
-    echo "Found metadata / Processed / Success / Error (webp): $webpFound / $webpProc / $webpSucc / $webpErr"
-    echo ""
-    echo "Total in folder: $tiffAllCount tiff"
-    echo "Found metadata / Processed / Success / Error (tiff): $tiffFound / $tiffProc / $tiffSucc / $tiffErr"
-    echo ""
-    echo "Total in folder: $mp4AllCount mp4"
-    echo "Found metadata / Processed / Success / Error (mp4): $mp4Found / $mp4Proc / $mp4Succ / $mp4Err"
-    echo ""
-    echo "Total in folder: $movAllCount mov"
-    echo "Found metadata / Processed / Success / Error (mov): $movFound / $movProc / $movSucc / $movErr"
-    echo ""
-
+    echo "Processing json files ($jsonScanned / $jsonAllCount)$dot"
 done
 
-echo "Finishing the report..."
+
 ffmpegErrors=("${ffmpegErrors[@]//[$'\r\n']/}")
 ffmpegErrors=("${ffmpegErrors[@]/$'\n'/}")
 
@@ -440,18 +432,24 @@ errNumber="$(grep -o 'Error occurred:' <<< "${ffmpegErrors[@]}" | wc -l)"
 trimmed_string=$(echo "$errNumber" | sed -e 's/  */ /g' -e 's/^ *//' -e 's/ *$//')
 errNumber="$trimmed_string"
 
-clear
+
 
 for error in "${ffmpegErrors[@]}"; do
     if [[ ! -z "$error" ]]; then
         echo "$error"
     fi
 done
+
+
+clear
 echo ""
 echo ""
 echo ""
 echo ""
 echo ""
+echo "Multimedia files extensions fixed"
+echo "Json files extensions fixed"
+echo "Json files processed"
 echo "All done. Statistics:"
 echo ""
 echo "Total in folder: $jpgAllCount jpg"
@@ -463,9 +461,6 @@ echo ""
 echo "Total in folder: $webpAllCount webp"
 echo "Found metadata / Processed / Success / Error (webp): $webpFound / $webpProc / $webpSucc / $webpErr"
 echo ""
-echo "Total in folder: $tiffAllCount tiff"
-echo "Found metadata / Processed / Success / Error (tiff): $tiffFound / $tiffProc / $tiffSucc / $tiffErr"
-echo ""
 echo "Total in folder: $mp4AllCount mp4"
 echo "Found metadata / Processed / Success / Error (mp4): $mp4Found / $mp4Proc / $mp4Succ / $mp4Err"
 echo ""
@@ -474,7 +469,3 @@ echo "Found metadata / Processed / Success / Error (mov): $movFound / $movProc /
 echo ""
 echo "Number of occured errors: $errNumber"
 echo "List of errors provided avove this section."
-
-# echo "Updated metadata in ${successCounter} mp4 files"
-# echo "Recoded ${recodedCounter} mp4 files to add geo info"
-# echo "Missing ${errorCounter} mp4 files"

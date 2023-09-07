@@ -19,7 +19,6 @@ Also, here is the list of metadata supported:
 | webp  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10007;  |
 | mp4  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;, via recode  |
 | mov  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
-| gif  | tbd  | tbd  | tbd  | tbd  | tbd  |
 
 
 <b>The table does not illustrate the structure of the metadata of the file type, but whether the final file will contain the data you need.</b>
@@ -40,42 +39,97 @@ Project roadmap:
 - [x] .png support
 - [x] Extensions processing part
 - [x] .webp support
-- [ ] .gif support
+- [x] Guide to usage
 - [ ] Recursive error solver
-- [ ] Guide to usage
+
 
 
 
 System requirements
 -------
 
-Takeout helper is a console app, written using a bash language.
-In practice it means, that you can run this without any problem on <u>any Mac</u> or <u>Linux</u> system.
-What about Windows? Sorry, I do not have a solution at the moment, just try to google it. I am not an expert.
+Takeout helper is a console app, written using a bash language. 
+In practice it means, that you can run this without any problem on <u>any Mac</u> or <u>Linux</u> system. 
+Script is written on base of macOS, so there can be some issues using it on Linux.
+What about Windows? Sorry, I do not have a solution at the moment, just try to google it. I am not an expert. 
 
-Written and tested on Macbook Pro 2020 with M1 chip.
+Written and tested on Macbook Pro 2020 with M1 chip. macOS Ventura 13.5.1
 
 Usage (and explanation)
 -------
 ### WARNINGS
 
-<b>I take NO responsibility for your files. Everything you do - you do at your own peril and risk.
-Please read the entire manual before doing anything. This will help you understand what's going on and what can go wrong.
-
-FOR THE USERS WITH >5000 FILES:
+<b>I take NO responsibility for your files. Everything you do - you do at your own peril and risk. 
+Please read the entire manual before doing anything. This will help you understand what's going on and what can go wrong. 
 
 
-I take NO responsibility for your hard drive state after the process. This script will check all of your photos TWICE, so
-please take care of your hard drive/HDD.
-
-I DO NOT RECOMEND TO PROCEED THE SCRIPT FOR 100.000+ FILES!
+NOT RECOMMENDED TO PROCEED MORE THAN 5K FILES AT A TIME! 
 
 
 Please, break your files into pieces to proceed them one by one!</b>
 
 ### Preparations
 
+Note: All packages and utils we are going to discuss here must be installed globally (You must have access to util functions from any directories on your drive)
 
+1. Check the WARNINGS section (above)
+2. Check the system requirements section (above)
+3. [Install jq](https://jqlang.github.io/jq/)
+You can find the instuctions by yourself or just use [homebrew](https://brew.sh/) as I do.
+To install jq with brew, use this command:
+
+```bash
+brew install jq
+```
+
+You can also remove it in future using:
+
+```bash
+brew remove jq
+```
+
+Brew will automatically provide you a way to install jq globally - follow it.
+
+4. [Install exiftool (instructions inside)](https://exiftool.org/install.html)
+5. Install ffmpeg
+Using brew:
+
+```bash
+brew install ffmpeg
+```
+
+Brew will automatically provide you a way to install ffmpeg globally - follow it.
+
+6. File management
+
+
+Download you google photos library from https://takeout.google.com
+Extract all the archives and place all the files you want inside one folder ("Main folder" below) 
+I am so sorry, but in the current state of script there is no way to save the names of your albums.
 
 ### Script launch
+
+Download the script itself and place it inside this main folder.
+
+
+Than, open the new terminal window and type:
+
+```bash
+cd path/to/your/folder
+```
+
+You can copy the full path in Finder, for example.
+
+
+Last step is to run the script:
+```bash
+sh gp_takeout_helper.sh 
+```
+
+Now let the script do it`s work. Take some rest, make yourself a cup of tea :)
+
 ### What`s next?
+
+Script will provide a stats report after - you can use it to find missing data to try fix some errors itself.
+Now you can see some subfolders in main folder, in which successfully processed files are grouped by extensions.
+Also script removes json files, which are already used and moves successfully processed files to subfolders.

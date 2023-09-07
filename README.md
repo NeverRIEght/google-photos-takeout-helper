@@ -16,8 +16,7 @@ Also, here is the list of metadata supported:
 |:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|
 | jpeg(jpg)  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
 | png  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10007;  |
-| webp  | tbd  | tbd  | tbd  | tbd  | tbd  |
-| tiff  | tbd  | tbd  | tbd  | tbd  | tbd  |
+| webp  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10007;  |
 | mp4  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;, via recode  |
 | mov  | &#10003;  | &#10003;  | &#10007;  | &#10003;  | &#10003;  |
 | gif  | tbd  | tbd  | tbd  | tbd  | tbd  |
@@ -29,7 +28,7 @@ Also, here is the list of metadata supported:
 
 
 Some commentaries to this table:
-- Linux is unfriendly when you need to change the creation date of a file. In some cases this is possible and in some it is not. Some of the formats listed in the table do not have such a metadata field at all, and even if one is added, most applications will not recognize this date. Despite this, the script will try to record the date the file was modified and the date the file was created, if possible. In this way, you will most likely get a file whose metadata says that the file was created and edited at the same time - the time at which this video / photo was originally taken. So, you will get an accurate date in most cases.
+- If possible, file creation date will be written in two field: creation date and modification date. If creation date is not supported, only the modification date will be used to store this kind of data. In this case, you will see no difference between creation date and modification date inside your file manager.
 - Geo coords is supported in mp4, but due to the peculiarities of ffmpeg, it is not possible to save the necessary metadata without video recoding. I assure you that the quality of the video when transcoding in this way remains approximately the same, if you look purely at the eye.
 
 Project roadmap:
@@ -40,10 +39,9 @@ Project roadmap:
 - [x] .jpg support
 - [x] .png support
 - [x] Extensions processing part
-- [ ] Recursive error solver
-- [ ] .webp support
-- [ ] .tiff support
+- [x] .webp support
 - [ ] .gif support
+- [ ] Recursive error solver
 - [ ] Guide to usage
 
 
